@@ -1,6 +1,14 @@
 .venv/
+venv/
+
+data/
+
 __pycache__/
 *.pyc
-data/
+*.pyo
+*.pyd
+
 .env
-configs/gcp-service-account.json
+.env.*
+
+.ipynb_checkpoints/
