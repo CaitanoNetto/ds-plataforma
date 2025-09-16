@@ -1,11 +1,13 @@
 import pandas as pd
 from pathlib import Path
 from datetime import datetime
+from shutil import rmtree
 
 
 def build_sales_silver(
         bronze_dir: str = "data/bronze/sales",
-        silver_dir: str = "data/silver/sales"
+        silver_dir: str = "data/silver/sales",
+        overwrite: bool = False,
 ) -> str:
     df = pd.read_parquet(bronze_dir, engine="pyarrow")
     df["ts"] = pd.to_datetime(df["ts"], errors="coerce")
@@ -40,6 +42,13 @@ def build_sales_silver(
         "sales_id", "store_id", "product_id", "ts", "qty", "price", "discount", "revenue", "year", "month", "day",
     ]
     df = df[cols]
+
+    if Path(silver_dir).exists():
+        if overwrite:
+            rmtree(silver_dir)
+        else:
+            raise FileExistsError(
+                f"Diretório já existe: {silver_dir}. Use overwrite=True se quiser sobrescrever.")
 
     Path(silver_dir).mkdir(parents=True, exist_ok=True)
     df.to_parquet(

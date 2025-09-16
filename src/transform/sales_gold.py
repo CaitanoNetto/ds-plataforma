@@ -1,13 +1,13 @@
 import pandas as pd
 from pathlib import Path
 import pyarrow.dataset as ds
-import shutil
+from shutil import rmtree
 
 
 def build_sales_gold(
         silver_dir: str = "data/silver/sales",
         gold_dir: str = "data/gold/sales_ml_ready",
-
+        overwrite: bool = False,
 ) -> str:
     dataset = ds.dataset(silver_dir, format="parquet", partitioning="hive")
     df = dataset.to_table().to_pandas()
@@ -75,7 +75,11 @@ def build_sales_gold(
     daily = daily[cols]
 
     if Path(gold_dir).exists():
-        shutil.rmtree(gold_dir)
+        if overwrite:
+            rmtree(gold_dir)
+        else:
+            raise FileExistsError(
+                f"Diretório já existe: {gold_dir}. Use overwrite=True se quiser sobrescrever.")
 
     Path(gold_dir).mkdir(parents=True, exist_ok=True)
     daily.to_parquet(
